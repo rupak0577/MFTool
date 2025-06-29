@@ -58,6 +58,7 @@ dependencies {
 
     implementation(libs.retrofit)
     implementation(libs.retrofit.moshi)
+    implementation(libs.okhttp.logger)
 
     implementation(libs.moshi)
     ksp(libs.moshi.codegen)
@@ -67,8 +68,9 @@ dependencies {
     ksp(libs.androidx.room.compiler)
 
 
-
+    testImplementation(libs.kotlin.test)
     testImplementation(libs.junit)
+    androidTestImplementation(libs.kotlin.test)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
