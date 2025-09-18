@@ -16,7 +16,11 @@ class DaoTest : DatabaseTest() {
                     nav = 92.67110,
                     date = "26-06-2025",
                     fundHouse = "PPFAS Mutual Fund",
-                    peak = 0.0
+                    schemeName = "PPFAS Fund",
+                    schemeType = "Open Ended Schemes",
+                    schemeCategory = "Equity Scheme - Sectoral/ Thematic",
+                    peak = 0.0,
+                    peakDate = "28-09-2024"
                 )
             )
         )
@@ -38,7 +42,11 @@ class DaoTest : DatabaseTest() {
                     nav = 92.67110,
                     date = "26-06-2025",
                     fundHouse = "PPFAS Mutual Fund",
-                    peak = 92.67110
+                    schemeName = "PPFAS Fund",
+                    schemeType = "Open Ended Schemes",
+                    schemeCategory = "Equity Scheme - Sectoral/ Thematic",
+                    peak = 92.67110,
+                    peakDate = "28-09-2024"
                 )
             )
         )
@@ -49,7 +57,11 @@ class DaoTest : DatabaseTest() {
                 nav = 93.16600,
                 date = "27-06-2025",
                 fundHouse = "PPFAS Mutual Fund",
-                peak = maxOf(93.16600, isinDao.getPeak(122639))
+                schemeName = "PPFAS Fund",
+                schemeType = "Open Ended Schemes",
+                schemeCategory = "Equity Scheme - Sectoral/ Thematic",
+                peak = maxOf(93.16600, isinDao.getPeak(122639)),
+                peakDate = "28-09-2024"
             )
         )
 

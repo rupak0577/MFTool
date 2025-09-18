@@ -15,6 +15,7 @@ data class IsinEntity(
     val schemeType: String,
     val schemeCategory: String,
     val peak: Double,
+    val peakDate: String
 )
 
 fun IsinEntity.toIsinObject() = IsinObject(
@@ -25,6 +26,7 @@ fun IsinEntity.toIsinObject() = IsinObject(
     schemeName = this.schemeName,
     schemeType = this.schemeType,
     schemeCategory = this.schemeCategory,
-    peak = this.peak
+    peak = this.peak,
+    peakDate = this.peakDate
 )
 

@@ -243,6 +243,7 @@ fun ShowContentDialog(isinObject: IsinObject?, onDismissDialog: () -> Unit) {
                     "Scheme" to (isinObject?.schemeCategory ?: ""),
                     "Scheme Type" to (isinObject?.schemeType ?: ""),
                     "Peak NAV" to (isinObject?.peak.toString()),
+                    "Peak NAV Date" to (isinObject?.peakDate ?: "")
                 )
             )
         }
@@ -263,7 +264,8 @@ fun GreetingPreview() {
             "Parag Parikh ELSS Tax Saver Fund- Direct Growth",
             "Open Ended Schemes",
             "Equity Scheme - ELSS",
-            0.0
+            0.0,
+            peakDate = "28-09-2024"
         )
     )
 
@@ -305,7 +307,8 @@ fun ShowContentDialogPreview() {
         "Parag Parikh ELSS Tax Saver Fund- Direct Growth",
         "Open Ended Schemes",
         "Equity Scheme - ELSS",
-        0.0
+        0.0,
+        peakDate = "28-09-2024"
     )
 
     ShowContentDialog(obj) { }

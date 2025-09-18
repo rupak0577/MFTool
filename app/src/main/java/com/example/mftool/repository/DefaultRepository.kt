@@ -65,10 +65,15 @@ class DefaultRepository @Inject constructor(
             is ApiCall.Success<IsinDetailsResponse?> -> {
                 val unwrappedResponse = response.response
                 if (unwrappedResponse != null) {
-                    val peak = if (force) {
-                        findLastMarketPeak(unwrappedResponse.data)
+                    var lastMarketPeakDate = ""
+                    var peak: Double
+                    if (force) {
+                        val peakItem = findLastMarketPeak(unwrappedResponse.data)
+                        lastMarketPeakDate = peakItem?.date ?: ""
+                        peak = peakItem?.nav?.toDouble() ?: 0.0
                     } else {
-                        dao.getPeak(unwrappedResponse.meta.schemeCode)
+                        lastMarketPeakDate = dao.getPeakDate(unwrappedResponse.meta.schemeCode)
+                        peak = dao.getPeak(unwrappedResponse.meta.schemeCode)
                     }
 
                     dao.upsertNav(
@@ -80,7 +85,8 @@ class DefaultRepository @Inject constructor(
                             schemeName = unwrappedResponse.meta.schemeName,
                             schemeType = unwrappedResponse.meta.schemeType,
                             schemeCategory = unwrappedResponse.meta.schemeCategory,
-                            peak = peak
+                            peak = peak,
+                            peakDate = lastMarketPeakDate
                         )
                     )
                 } else {
@@ -104,16 +110,16 @@ class DefaultRepository @Inject constructor(
         }
     }
 
-    private suspend fun findLastMarketPeak(data: List<IsinDetailsResponse.Data>): Double {
+    private suspend fun findLastMarketPeak(data: List<IsinDetailsResponse.Data>): IsinDetailsResponse.Data? {
         return withContext(dispatchers.default()) {
             val formatter = SimpleDateFormat("dd-MM-yyyy")
-            data.takeWhile {
+            data.filter {
                 val startDate = formatter.parse("01-04-2024")
                 val endDate = formatter.parse("28-02-2025")
                 val thisDate = formatter.parse(it.date)
 
                 thisDate >= startDate && thisDate <= endDate
-            }.fastMaxBy { it.nav.toDouble() }?.nav?.toDouble() ?: 0.0
+            }.fastMaxBy { it.nav.toDouble() }
         }
     }
 

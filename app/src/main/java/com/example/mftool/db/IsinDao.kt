@@ -23,4 +23,7 @@ interface IsinDao {
 
     @Query("SELECT peak FROM isin WHERE schemeCode = :isin")
     suspend fun getPeak(isin: Int): Double
+
+    @Query("SELECT peakDate FROM isin WHERE schemeCode = :isin")
+    suspend fun getPeakDate(isin: Int): String
 }
