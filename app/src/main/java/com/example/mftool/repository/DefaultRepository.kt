@@ -22,6 +22,7 @@ import java.io.BufferedReader
 import java.io.InputStream
 import java.io.InputStreamReader
 import java.nio.charset.Charset
+import java.text.SimpleDateFormat
 import javax.inject.Inject
 
 class DefaultRepository @Inject constructor(
@@ -65,12 +66,9 @@ class DefaultRepository @Inject constructor(
                 val unwrappedResponse = response.response
                 if (unwrappedResponse != null) {
                     val peak = if (force) {
-                        findPeak(unwrappedResponse.data)
+                        findLastMarketPeak(unwrappedResponse.data)
                     } else {
-                        maxOf(
-                            dao.getPeak(unwrappedResponse.meta.schemeCode),
-                            unwrappedResponse.data.first().nav.toDouble()
-                        )
+                        dao.getPeak(unwrappedResponse.meta.schemeCode)
                     }
 
                     dao.upsertNav(
@@ -106,9 +104,16 @@ class DefaultRepository @Inject constructor(
         }
     }
 
-    private suspend fun findPeak(data: List<IsinDetailsResponse.Data>): Double {
+    private suspend fun findLastMarketPeak(data: List<IsinDetailsResponse.Data>): Double {
         return withContext(dispatchers.default()) {
-            data.fastMaxBy { it.nav.toDouble() }?.nav?.toDouble() ?: 0.0
+            val formatter = SimpleDateFormat("dd-MM-yyyy")
+            data.takeWhile {
+                val startDate = formatter.parse("01-04-2024")
+                val endDate = formatter.parse("28-02-2025")
+                val thisDate = formatter.parse(it.date)
+
+                thisDate >= startDate && thisDate <= endDate
+            }.fastMaxBy { it.nav.toDouble() }?.nav?.toDouble() ?: 0.0
         }
     }
 
