@@ -53,14 +53,16 @@ class DefaultRepository @Inject constructor(
                     safeApiCall { apiService.getDetails(fund.isin) }
                 else
                     safeApiCall { apiService.getDetailsLatest(fund.isin) }
-                handleResponse(apiCallResponse, force)
+                handleResponse(apiCallResponse, fund.owners, force)
             }
         }
 
         _repositoryState.emit(Repository.State.Loaded)
     }
 
-    private suspend fun handleResponse(response: ApiCall<IsinDetailsResponse?>, force: Boolean) {
+    private suspend fun handleResponse(response: ApiCall<IsinDetailsResponse?>,
+                                       owners: String,
+                                       force: Boolean) {
         when (response) {
             is ApiCall.Success<IsinDetailsResponse?> -> {
                 val unwrappedResponse = response.response
@@ -86,7 +88,8 @@ class DefaultRepository @Inject constructor(
                             schemeType = unwrappedResponse.meta.schemeType,
                             schemeCategory = unwrappedResponse.meta.schemeCategory,
                             peak = peak,
-                            peakDate = lastMarketPeakDate
+                            peakDate = lastMarketPeakDate,
+                            owners = owners
                         )
                     )
                 } else {

@@ -20,7 +20,8 @@ class DaoTest : DatabaseTest() {
                     schemeType = "Open Ended Schemes",
                     schemeCategory = "Equity Scheme - Sectoral/ Thematic",
                     peak = 0.0,
-                    peakDate = "28-09-2024"
+                    peakDate = "28-09-2024",
+                    owners = "1000"
                 )
             )
         )
@@ -46,7 +47,8 @@ class DaoTest : DatabaseTest() {
                     schemeType = "Open Ended Schemes",
                     schemeCategory = "Equity Scheme - Sectoral/ Thematic",
                     peak = 92.67110,
-                    peakDate = "28-09-2024"
+                    peakDate = "28-09-2024",
+                    owners = "1000"
                 )
             )
         )
@@ -61,7 +63,8 @@ class DaoTest : DatabaseTest() {
                 schemeType = "Open Ended Schemes",
                 schemeCategory = "Equity Scheme - Sectoral/ Thematic",
                 peak = maxOf(93.16600, isinDao.getPeak(122639)),
-                peakDate = "28-09-2024"
+                peakDate = "28-09-2024",
+                owners = "1000"
             )
         )
 

@@ -9,5 +9,6 @@ data class IsinObject(
     val schemeType: String,
     val schemeCategory: String,
     val peak: Double,
-    val peakDate: String
+    val peakDate: String,
+    val owners: String
 )

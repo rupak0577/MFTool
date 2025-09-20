@@ -11,7 +11,7 @@ fun readCsv(reader: Reader): List<Isin> {
     val isins = mutableListOf<Isin>()
     while (iterator.hasNext()) {
         val value = iterator.next()
-        isins.add(Isin(value[0], value[1]))
+        isins.add(Isin(value[0], value[1], value[2].trim()))
     }
 
     csvReader.close()
@@ -21,5 +21,6 @@ fun readCsv(reader: Reader): List<Isin> {
 
 data class Isin(
     val name: String,
-    val isin: String
+    val isin: String,
+    val owners: String
 )
