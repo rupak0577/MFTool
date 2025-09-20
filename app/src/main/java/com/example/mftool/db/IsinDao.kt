@@ -9,10 +9,10 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface IsinDao {
-    @Query(value = "SELECT * FROM isin")
+    @Query(value = "SELECT *, (nav - peak) AS diff FROM isin ORDER BY diff DESC")
     fun getIsinEntities(): Flow<List<IsinEntity>>
 
-    @Query(value = "SELECT * FROM isin")
+    @Query(value = "SELECT *, (nav - peak) AS diff FROM isin ORDER BY diff DESC")
     suspend fun getIsinEntitiesSync(): List<IsinEntity>
 
     @Insert(onConflict = REPLACE)

@@ -129,7 +129,7 @@ private fun MainScreen(
                             .fillMaxSize()
                             .padding(horizontal = 8.dp)
                     ) {
-                        items(uiData.sortedByDescending { it.nav - it.peak }) {
+                        items(uiData, key = { item -> item.schemeCode }) {
                             ListItem(it) { isinObject ->
                                 dialogState = isinObject
                             }
