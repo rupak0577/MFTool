@@ -1,5 +1,7 @@
 package com.example.mftool.ui
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -9,6 +11,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -38,6 +42,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -45,6 +50,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mftool.MainViewModel
 import com.example.mftool.ui.theme.MFToolTheme
+import com.example.mftool.ui.theme.Purple40
+import com.example.mftool.ui.theme.Purple80
 import com.example.mftool.vo.IsinObject
 import de.charlex.compose.RevealDirection
 import de.charlex.compose.RevealSwipe
@@ -166,9 +173,13 @@ fun ListItem(
         modifier = Modifier.padding(vertical = 5.dp),
         state = rememberRevealState(
             directions = setOf(
-                RevealDirection.EndToStart
+                RevealDirection.EndToStart,
+                RevealDirection.StartToEnd
             )
         ),
+        hiddenContentStart = {
+            OwnersView(data.owners)
+        },
         hiddenContentEnd = {
             Row(
                 verticalAlignment = Alignment.CenterVertically
@@ -231,6 +242,38 @@ fun ListItem(
 }
 
 @Composable
+fun OwnersView(owners: String) {
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2)
+    ) {
+        items(4) { pos ->
+            Text(
+                text = when (pos) {
+                    0 -> "K"
+                    1 -> "T"
+                    2 -> "P"
+                    3 -> "R"
+                    else -> ""
+                },
+                color = if (owners[pos] == '1')
+                    Color.White
+                else
+                    Color.Black,
+                modifier = Modifier
+                    .background(
+                        if (owners[pos] == '1')
+                            Purple40
+                        else
+                            Purple80
+                    )
+                    .border(1.dp, Color.Black),
+                textAlign = TextAlign.Center,
+            )
+        }
+    }
+}
+
+@Composable
 fun ShowContentDialog(isinObject: IsinObject?, onDismissDialog: () -> Unit) {
     Dialog(onDismissRequest = { onDismissDialog() }) {
         Card(
@@ -265,7 +308,8 @@ fun GreetingPreview() {
             "Open Ended Schemes",
             "Equity Scheme - ELSS",
             0.0,
-            peakDate = "28-09-2024"
+            peakDate = "28-09-2024",
+            owners = "1000"
         )
     )
 
@@ -308,8 +352,15 @@ fun ShowContentDialogPreview() {
         "Open Ended Schemes",
         "Equity Scheme - ELSS",
         0.0,
-        peakDate = "28-09-2024"
+        peakDate = "28-09-2024",
+        owners = "1000"
     )
 
     ShowContentDialog(obj) { }
+}
+
+@Preview
+@Composable
+fun OwnersViewPreview() {
+    OwnersView("1001")
 }
