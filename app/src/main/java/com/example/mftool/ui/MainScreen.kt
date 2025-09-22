@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -24,6 +25,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -31,7 +33,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,20 +49,23 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.work.Data
+import androidx.work.workDataOf
 import com.example.mftool.MainViewModel
 import com.example.mftool.ui.theme.MFToolTheme
 import com.example.mftool.ui.theme.Purple40
 import com.example.mftool.ui.theme.Purple80
 import com.example.mftool.vo.IsinObject
+import com.example.mftool.work.SyncWorker.Companion.WORKER_OUTPUT_DATA_PROGRESS
 import de.charlex.compose.RevealDirection
 import de.charlex.compose.RevealSwipe
 import de.charlex.compose.rememberRevealState
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 
 @Composable
 fun MainRoot(viewModel: MainViewModel = viewModel()) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val syncState by viewModel.isSyncing.collectAsStateWithLifecycle()
+    val progress by viewModel.progress.collectAsStateWithLifecycle()
     val uiData by viewModel.uiData.collectAsStateWithLifecycle()
 
     val snackbarHostState = remember { SnackbarHostState() }
@@ -74,17 +78,21 @@ fun MainRoot(viewModel: MainViewModel = viewModel()) {
         modifier = Modifier.fillMaxSize(),
         floatingActionButtonPosition = FabPosition.Center,
         floatingActionButton = {
-            FloatingActionButton(onClick = {
-                if (uiData.isEmpty())
-                    viewModel.fetchDetails(true)
-                else
-                    viewModel.fetchDetails(false)
-            }) {
-                Icon(Icons.Default.Refresh, "refresh")
+            when (syncState) {
+                true -> {
+                    FloatingActionButton(onClick = {
+                        viewModel.stopSync()
+                    }) {
+                        Icon(Icons.Default.Clear, "refresh")
+                    }
+                }
+                false -> {
+                    // Hide
+                }
             }
         }
     ) { innerPadding ->
-        MainScreen(innerPadding, uiState, uiData, snackbarHostState, rootCoroutineScope)
+        MainScreen(innerPadding, syncState, progress, uiData, snackbarHostState, rootCoroutineScope)
     }
 }
 
@@ -92,7 +100,8 @@ fun MainRoot(viewModel: MainViewModel = viewModel()) {
 @Composable
 private fun MainScreen(
     padding: PaddingValues,
-    uiState: MainViewModel.UiState,
+    syncState: Boolean,
+    progress: List<Data>,
     uiData: List<IsinObject>,
     snackbarHostState: SnackbarHostState,
     coroutineScope: CoroutineScope
@@ -105,56 +114,42 @@ private fun MainScreen(
         }
     }
 
-    when (uiState) {
-        is MainViewModel.UiState.Loaded -> {
-            Column(
-                Modifier.padding(padding),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Text(text = "Funds: ${uiData.size}")
-                }
-
-                if (uiData.isEmpty()) {
-                    Text("No data.")
-                } else {
-                    LazyColumn(
-                        Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 8.dp)
-                    ) {
-                        items(uiData, key = { item -> item.schemeCode }) {
-                            ListItem(it) { isinObject ->
-                                dialogState = isinObject
-                            }
-                        }
-                    }
-                }
-            }
+    Column(
+        Modifier.padding(padding),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Text(text = "Funds: ${uiData.size}")
         }
 
-        is MainViewModel.UiState.Loading -> {
-            Column(
+        when (syncState) {
+            true -> {
+                LinearProgressIndicator(
+                    progress = { progress.get(0).getFloat(WORKER_OUTPUT_DATA_PROGRESS, 0.0f) },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+            false -> {}
+        }
+
+        if (uiData.isEmpty()) {
+            Text("No data.")
+        } else {
+            LazyColumn(
                 Modifier
-                    .padding(padding)
-                    .fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                    .fillMaxSize()
+                    .padding(horizontal = 8.dp)
             ) {
-                CircularProgressIndicator()
-            }
-        }
-
-        is MainViewModel.UiState.Error -> {
-            LaunchedEffect(uiState.error) {
-                coroutineScope.launch {
-                    snackbarHostState.showSnackbar(uiState.error ?: "")
+                items(uiData, key = { item -> item.schemeCode }) {
+                    ListItem(it) { isinObject ->
+                        dialogState = isinObject
+                    }
                 }
             }
         }
@@ -190,7 +185,7 @@ fun ListItem(
                 )
             }
         },
-        backgroundCardEndColor = MaterialTheme.colorScheme.secondaryContainer,
+        backgroundCardEndColor = MaterialTheme.colorScheme.tertiaryContainer,
         backgroundCardStartColor = MaterialTheme.colorScheme.tertiaryContainer,
         shape = MaterialTheme.shapes.small,
         card = { shape, content ->
@@ -326,12 +321,13 @@ fun GreetingPreview() {
                 FloatingActionButton(onClick = {
 
                 }) {
-                    Icon(Icons.Default.Refresh, "refresh")
+                    Icon(Icons.Default.Clear, "refresh")
                 }
             }) { padding ->
             MainScreen(
                 padding = padding,
-                uiState = MainViewModel.UiState.Loaded,
+                syncState = false,
+                progress = arrayListOf(workDataOf(WORKER_OUTPUT_DATA_PROGRESS to 0.3f)),
                 uiData = items,
                 snackbarHostState = SnackbarHostState(),
                 coroutineScope = rememberCoroutineScope()

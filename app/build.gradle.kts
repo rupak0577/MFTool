@@ -70,6 +70,9 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
 
+    implementation(libs.workmanager)
+    implementation(libs.hilt.work)
+    ksp(libs.hilt.compiler)
 
     testImplementation(libs.kotlin.test)
     testImplementation(libs.junit)
@@ -78,6 +81,7 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
+    androidTestImplementation(libs.workmanager.test)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 }

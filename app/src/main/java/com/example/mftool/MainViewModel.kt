@@ -2,30 +2,21 @@ package com.example.mftool
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.mftool.MainViewModel.UiState.Error
-import com.example.mftool.MainViewModel.UiState.Loaded
-import com.example.mftool.MainViewModel.UiState.Loading
+import androidx.work.workDataOf
 import com.example.mftool.repository.Repository
 import com.example.mftool.vo.IsinObject
+import com.example.mftool.work.SyncManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val repository: Repository,
+    private val syncManager: SyncManager
 ) : ViewModel() {
-    sealed interface UiState {
-        object Loading : UiState
-        object Loaded : UiState
-        data class Error(
-            val error: String?,
-        ) : UiState
-    }
 
     val uiData: StateFlow<List<IsinObject>> =
         repository.loadDetailsFromCache().stateIn(
@@ -34,28 +25,25 @@ class MainViewModel @Inject constructor(
             initialValue = arrayListOf(),
         )
 
-    val uiState: StateFlow<UiState> =
-        repository.repositoryState.map { state ->
-            when (state) {
-                Repository.State.Loaded -> {
-                    Loaded
-                }
-
-                Repository.State.Loading -> {
-                    Loading
-                }
-
-                Repository.ErrorState.NetworkError -> Error("Network Error")
-                Repository.ErrorState.TimeoutError -> Error("Timeout Error")
-                Repository.ErrorState.UnownError -> Error("Unown Error")
-            }
-        }.stateIn(
+    val isSyncing = syncManager.isSyncing
+        .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = Loading,
+            initialValue = false,
+        )
+
+    val progress = syncManager.progress
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = arrayListOf(workDataOf())
         )
 
     fun fetchDetails(force: Boolean) {
-        viewModelScope.launch { repository.fetchDetailsFromNetwork(force) }
+        syncManager.requestSync(force)
+    }
+
+    fun stopSync() {
+        syncManager.stopSync()
     }
 }
