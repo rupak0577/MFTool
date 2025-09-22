@@ -28,7 +28,7 @@ class MFToolApp : Application(), Configuration.Provider {
     override fun onCreate() {
         super.onCreate()
 
-        val lastSyncTime = sharedPreferences.getLong("LAST_SYNC_TIMESTAMP", System.currentTimeMillis())
+        val lastSyncTime = sharedPreferences.getLong("LAST_SYNC_TIMESTAMP", 0)
 
         if (System.currentTimeMillis() - lastSyncTime >= TimeUnit.MILLISECONDS.convert(2, TimeUnit.DAYS)) {
             WorkManager.getInstance(this).apply {

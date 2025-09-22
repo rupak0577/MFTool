@@ -1,7 +1,9 @@
 package com.example.mftool.ui
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -17,10 +19,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
@@ -37,12 +37,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -61,7 +61,6 @@ import com.example.mftool.work.SyncWorker.Companion.WORKER_OUTPUT_DATA_PROGRESS
 import de.charlex.compose.RevealDirection
 import de.charlex.compose.RevealSwipe
 import de.charlex.compose.rememberRevealState
-import kotlinx.coroutines.CoroutineScope
 
 @Composable
 fun MainRoot(viewModel: MainViewModel = viewModel()) {
@@ -70,7 +69,6 @@ fun MainRoot(viewModel: MainViewModel = viewModel()) {
     val uiData by viewModel.uiData.collectAsStateWithLifecycle()
 
     val snackbarHostState = remember { SnackbarHostState() }
-    val rootCoroutineScope = rememberCoroutineScope()
 
     Scaffold(
         snackbarHost = {
@@ -87,13 +85,20 @@ fun MainRoot(viewModel: MainViewModel = viewModel()) {
                         Icon(Icons.Default.Clear, "refresh")
                     }
                 }
+
                 false -> {
                     // Hide
                 }
             }
         }
     ) { innerPadding ->
-        MainScreen(innerPadding, syncState, progress, uiData, snackbarHostState, rootCoroutineScope, syncState) {
+        MainScreen(
+            innerPadding,
+            syncState,
+            progress,
+            uiData,
+            syncState,
+            { viewModel.fetchDetails(true) }) {
             viewModel.fetchDetails(false)
         }
     }
@@ -107,9 +112,8 @@ private fun MainScreen(
     syncState: Boolean,
     progress: List<Data>,
     uiData: List<IsinObject>,
-    snackbarHostState: SnackbarHostState,
-    coroutineScope: CoroutineScope,
     isRefreshing: Boolean,
+    forceRefresh: () -> Unit,
     onRefresh: () -> Unit,
 ) {
     var dialogState by remember { mutableStateOf<IsinObject?>(null) }
@@ -131,7 +135,23 @@ private fun MainScreen(
                 .padding(8.dp),
             horizontalArrangement = Arrangement.Center
         ) {
-            Text(text = "Funds: ${uiData.size}")
+            val context = LocalContext.current
+
+            Text(
+                text = "Funds: ${uiData.size}",
+                modifier = Modifier.combinedClickable(
+                    onClick = {},
+                    onLongClick = {
+                        Toast.makeText(
+                            context,
+                            "Force Refresh - Recomputing peaks",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        forceRefresh()
+                    },
+                    onLongClickLabel = "Force Refresh"
+                )
+            )
         }
 
         when (syncState) {
@@ -141,6 +161,7 @@ private fun MainScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
             }
+
             false -> {}
         }
 
@@ -342,9 +363,8 @@ fun GreetingPreview() {
                 syncState = false,
                 progress = arrayListOf(workDataOf(WORKER_OUTPUT_DATA_PROGRESS to 0.3f)),
                 uiData = items,
-                snackbarHostState = SnackbarHostState(),
-                coroutineScope = rememberCoroutineScope(),
-                isRefreshing = false
+                isRefreshing = false,
+                {}
             ) {
 
             }
