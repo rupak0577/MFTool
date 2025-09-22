@@ -1,7 +1,9 @@
 package com.example.mftool.di
 
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.room.Room
+import com.example.mftool.R
 import com.example.mftool.api.ApiService
 import com.example.mftool.db.IsinDb
 import dagger.Module
@@ -44,5 +46,11 @@ object AppModule {
             )
             .build()
             .create(ApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun providesSharedPreferences(@ApplicationContext context: Context): SharedPreferences {
+        return context.getSharedPreferences(context.getString(R.string.preference_file_key), Context.MODE_PRIVATE)
     }
 }

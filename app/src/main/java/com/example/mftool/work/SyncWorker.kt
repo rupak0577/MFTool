@@ -40,6 +40,7 @@ class SyncWorker @AssistedInject constructor(
     private val dispatchers: CDispatchers,
     private val apiService: ApiService,
     private val dao: IsinDao,
+    private val prefs: SharedPreferences
 ) :
     CoroutineWorker(appContext, workerParams) {
 
@@ -63,6 +64,8 @@ class SyncWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result {
         return withContext(dispatchers.io()) {
+            prefs.edit { putLong("LAST_SYNC_TIMESTAMP", System.currentTimeMillis()) }
+
             val force = inputData.getBoolean(WORKER_INPUT_DATA_FORCE_SYNC, false)
             fetchDetailsFromNetwork(force || dao.getIsinEntitiesSync().isEmpty())
         }
