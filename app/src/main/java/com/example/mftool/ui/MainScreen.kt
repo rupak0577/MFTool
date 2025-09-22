@@ -32,6 +32,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -92,11 +93,14 @@ fun MainRoot(viewModel: MainViewModel = viewModel()) {
             }
         }
     ) { innerPadding ->
-        MainScreen(innerPadding, syncState, progress, uiData, snackbarHostState, rootCoroutineScope)
+        MainScreen(innerPadding, syncState, progress, uiData, snackbarHostState, rootCoroutineScope, syncState) {
+            viewModel.fetchDetails(false)
+        }
     }
 }
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun MainScreen(
     padding: PaddingValues,
@@ -104,7 +108,9 @@ private fun MainScreen(
     progress: List<Data>,
     uiData: List<IsinObject>,
     snackbarHostState: SnackbarHostState,
-    coroutineScope: CoroutineScope
+    coroutineScope: CoroutineScope,
+    isRefreshing: Boolean,
+    onRefresh: () -> Unit,
 ) {
     var dialogState by remember { mutableStateOf<IsinObject?>(null) }
 
@@ -141,14 +147,21 @@ private fun MainScreen(
         if (uiData.isEmpty()) {
             Text("No data.")
         } else {
-            LazyColumn(
-                Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 8.dp)
+            PullToRefreshBox(
+                isRefreshing = isRefreshing,
+                onRefresh = {
+                    onRefresh()
+                }
             ) {
-                items(uiData, key = { item -> item.schemeCode }) {
-                    ListItem(it) { isinObject ->
-                        dialogState = isinObject
+                LazyColumn(
+                    Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 8.dp)
+                ) {
+                    items(uiData, key = { item -> item.schemeCode }) {
+                        ListItem(it) { isinObject ->
+                            dialogState = isinObject
+                        }
                     }
                 }
             }
@@ -330,8 +343,11 @@ fun GreetingPreview() {
                 progress = arrayListOf(workDataOf(WORKER_OUTPUT_DATA_PROGRESS to 0.3f)),
                 uiData = items,
                 snackbarHostState = SnackbarHostState(),
-                coroutineScope = rememberCoroutineScope()
-            )
+                coroutineScope = rememberCoroutineScope(),
+                isRefreshing = false
+            ) {
+
+            }
         }
     }
 }
