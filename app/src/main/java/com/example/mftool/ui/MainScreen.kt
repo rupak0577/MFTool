@@ -16,7 +16,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.Card
@@ -27,12 +26,14 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,7 +48,6 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.work.Data
@@ -116,11 +116,19 @@ private fun MainScreen(
     forceRefresh: () -> Unit,
     onRefresh: () -> Unit,
 ) {
-    var dialogState by remember { mutableStateOf<IsinObject?>(null) }
+    var isinObj by remember { mutableStateOf<IsinObject?>(null) }
+    var showBottomSheet by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState()
 
-    if (dialogState != null) {
-        ShowContentDialog(dialogState) {
-            dialogState = null
+    if (showBottomSheet && isinObj != null) {
+        ModalBottomSheet(
+            onDismissRequest = {
+                isinObj = null
+                showBottomSheet = false
+            },
+            sheetState = sheetState
+        ) {
+            ShowTableContent(isinObj)
         }
     }
 
@@ -181,7 +189,8 @@ private fun MainScreen(
                 ) {
                     items(uiData, key = { item -> item.schemeCode }) {
                         ListItem(it) { isinObject ->
-                            dialogState = isinObject
+                            isinObj = isinObject
+                            showBottomSheet = true
                         }
                     }
                 }
@@ -303,23 +312,16 @@ fun OwnersView(owners: String) {
 }
 
 @Composable
-fun ShowContentDialog(isinObject: IsinObject?, onDismissDialog: () -> Unit) {
-    Dialog(onDismissRequest = { onDismissDialog() }) {
-        Card(
-            modifier = Modifier.wrapContentSize(),
-            shape = RoundedCornerShape(16.dp),
-        ) {
-            TableScreen(
-                arrayListOf(
-                    "Fund House" to (isinObject?.fundHouse ?: ""),
-                    "Scheme" to (isinObject?.schemeCategory ?: ""),
-                    "Scheme Type" to (isinObject?.schemeType ?: ""),
-                    "Peak NAV" to (isinObject?.peak.toString()),
-                    "Peak NAV Date" to (isinObject?.peakDate ?: "")
-                )
-            )
-        }
-    }
+fun ShowTableContent(isinObject: IsinObject?) {
+    TableScreen(
+        arrayListOf(
+            "Fund House" to (isinObject?.fundHouse ?: ""),
+            "Scheme" to (isinObject?.schemeCategory ?: ""),
+            "Scheme Type" to (isinObject?.schemeType ?: ""),
+            "Peak NAV" to (isinObject?.peak.toString()),
+            "Peak NAV Date" to (isinObject?.peakDate ?: "")
+        )
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -388,7 +390,7 @@ fun ShowContentDialogPreview() {
         owners = "1000"
     )
 
-    ShowContentDialog(obj) { }
+    ShowTableContent(obj)
 }
 
 @Preview
