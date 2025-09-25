@@ -42,9 +42,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -58,9 +56,7 @@ import com.example.mftool.ui.theme.Purple40
 import com.example.mftool.ui.theme.Purple80
 import com.example.mftool.vo.IsinObject
 import com.example.mftool.work.SyncWorker.Companion.WORKER_OUTPUT_DATA_PROGRESS
-import de.charlex.compose.RevealDirection
 import de.charlex.compose.RevealSwipe
-import de.charlex.compose.rememberRevealState
 
 @Composable
 fun MainRoot(viewModel: MainViewModel = viewModel()) {
@@ -205,16 +201,8 @@ fun ListItem(
     modifier: Modifier = Modifier,
     showDetails: (data: IsinObject) -> Unit
 ) {
-    val haptic = LocalHapticFeedback.current
-
     RevealSwipe(
         modifier = Modifier.padding(vertical = 5.dp),
-        state = rememberRevealState(
-            directions = setOf(
-                RevealDirection.EndToStart,
-                RevealDirection.StartToEnd
-            )
-        ),
         hiddenContentStart = {
             OwnersView(data.owners)
         },
@@ -242,10 +230,9 @@ fun ListItem(
                 content = content
             )
         },
-        backgroundStartActionLabel = null,
-        backgroundEndActionLabel = "Hidden",
+        backgroundStartActionLabel = "Owners",
+        backgroundEndActionLabel = "NAV Diff",
         onContentLongClick = {
-            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
             showDetails(data)
         }
     ) {
