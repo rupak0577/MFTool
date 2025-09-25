@@ -16,8 +16,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -43,6 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -51,6 +50,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.work.Data
 import androidx.work.workDataOf
 import com.example.mftool.MainViewModel
+import com.example.mftool.R
 import com.example.mftool.ui.theme.MFToolTheme
 import com.example.mftool.ui.theme.Purple40
 import com.example.mftool.ui.theme.Purple80
@@ -78,7 +78,7 @@ fun MainRoot(viewModel: MainViewModel = viewModel()) {
                     FloatingActionButton(onClick = {
                         viewModel.stopSync()
                     }) {
-                        Icon(Icons.Default.Clear, "refresh")
+                        Icon(painterResource(R.drawable.cancel_24px), "refresh")
                     }
                 }
 
@@ -344,7 +344,7 @@ fun GreetingPreview() {
                 FloatingActionButton(onClick = {
 
                 }) {
-                    Icon(Icons.Default.Clear, "refresh")
+                    Icon(painterResource(R.drawable.cancel_24px), "refresh")
                 }
             }) { padding ->
             MainScreen(
